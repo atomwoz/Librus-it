@@ -37,4 +37,5 @@ function html_replace_relative_url($html, $root_url)
   return $html;
 }
 
+
 ?>
