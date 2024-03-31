@@ -32,7 +32,7 @@ function parse_avg($html) {
   foreach ($elements as $element) {
     $ee[] = process_element($element);
   }
-
+  $html = $doc->saveHTML();
   return [$html, $ee];
 }
 
@@ -69,12 +69,6 @@ function get_grade_weight($grade)
   return $weight;
 }
 
-function replace_img_with_text($element, $text)
-{
-  $img = $element;
-  set_inner_html($img, $text);
-}
-
 function process_element($element)
 {
   $grades = $element->getElementsByTagName("span");
@@ -92,21 +86,15 @@ function process_element($element)
     if (is_numeric($value)) {
       $sum += ($value*get_grade_weight($grade));
       $count += get_grade_weight($grade);
-      echo "<span style=\"; ". $bg_color. "\"> " . $value . "</span>:". get_grade_weight($grade) ." + ";
-    }
-    else
-    {
-      echo $value . " + ";
     }
   }
   if ($count > 0) {
     $avg = $sum / $count;
     $avg = round($avg, 2);
-    $avg = str_replace(".", ",", $avg);
     $avg_elem = $element->getElementsByTagName("td")->item(9);
+    $avg = number_format($avg, 2, ",", "");  
     set_inner_html($avg_elem,  $avg);
     $ee[] = $avg;
-    echo "<span style=\"color:green\"> Średnia: " . $avg . "</span><br>";
   }
   return $ee;
 }
@@ -136,11 +124,6 @@ function process_element_2($element) {
       if (is_numeric($text) && $text > 0) {
         $sum += $text;
         $count++;
-        echo  "<span style=\"color:red\">" . $text . "</span> + ";
-      }
-      else
-      {
-        echo $text . " + ";
       }
     }
   }
@@ -149,8 +132,6 @@ function process_element_2($element) {
     $avg = $sum / $count;
     $avg = round($avg, 2);
     $avg = str_replace(".", ",", $avg);
-    echo "<span style=\"color:green\"> Średnia: " . $avg . "</span><br>";
-    $element->nodeValue .= " Średnia: " . $avg;
   }
 }
 

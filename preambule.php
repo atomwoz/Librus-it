@@ -32,7 +32,9 @@ function post($url, $data)
 
 function html_replace_relative_url($html, $root_url)
 {
- //Zamienia <link rel="stylesheet" href="/js/librus-component/panel/librus-panel.css?v1" /> na <link rel="stylesheet" href="https://synergia.librus.pl/js/librus-component/panel/librus-panel.css?v1" />
+  //Usuwa trailing spacje, zaenkodowane jako %20 z linków
+  $html = preg_replace('/%20/', '', $html);
+  //Zamienia <link rel="stylesheet" href="/js/librus-component/panel/librus-panel.css?v1" /> na <link rel="stylesheet" href="https://synergia.librus.pl/js/librus-component/panel/librus-panel.css?v1" />
   $html = preg_replace('/(href|src)="(?!http)([^"]*)"/', '$1="'.$root_url.'$2"', $html);
   return $html;
 }

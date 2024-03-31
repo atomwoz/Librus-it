@@ -12,7 +12,7 @@ $auth_arr = [
 post("https://api.librus.pl/OAuth/Authorization?client_id=46",$auth_arr);
 get("https://api.librus.pl/OAuth/Authorization/2FA?client_id=46");
 $c = get("https://synergia.librus.pl/przegladaj_oceny/uczen");
-$c = html_replace_relative_url($c, "https://synergia.librus.pl/"); 
+
 
 //Remove sorting (class sort_box)
 $c = preg_replace('/<table class="right sort_box">.*?<\/table>/s', '', $c);
@@ -35,11 +35,12 @@ $c .= <<<__EOI__
   src: url('librus.woff') format('embedded-opentype'), url('librus.woff') format('woff');
   font-weight: normal;
   font-style: normal;
+
 }</style> </html>
 __EOI__;
 
 
-
+$c = html_replace_relative_url($c, "https://synergia.librus.pl/"); 
 
 print_r($c);
 
