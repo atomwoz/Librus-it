@@ -15,6 +15,31 @@ function set_inner_html( $element, $content ) {
   $element->appendChild( $content_node );
 }
 
+class Grade
+{
+  public function __construct($var = null, $weight = 0) {
+    $this->var = $var;
+    $this->weight = $weight;
+  }
+  public function get_my_avg()
+  {
+    $a = round($this->var,2);
+    return number_format($a, 2, '.', '');
+  }
+  public function get_avg(Grade $grade)
+  {
+
+    
+    $a = ($this->var * $this->weight + $grade->var * $grade->weight) / ($this->weight + $grade->weight);
+    $a = round($a,2);
+    $a = number_format($a, 2, '.', '');
+    return $a;
+  }
+  public function __toString()
+  {
+    return $this->var;
+  }
+}
 
 function parse_avg($html) {
   @$doc = new DOMDocument();
@@ -22,15 +47,32 @@ function parse_avg($html) {
 
   $xpath = new DOMXPath($doc);
   $ee = [];
+  $next_avg= 0;
+  $subj_avg = 0;
 
   $elements = $xpath->query("//*[contains(concat(' ', normalize-space(@class), ' '), ' line0 ')]");
   foreach ($elements as $element) {
-    $ee[] = process_element($element);
-  }
-
-  $elements = $xpath->query("//*[contains(concat(' ', normalize-space(@class), ' '), ' line1 ')]");
-  foreach ($elements as $element) {
-    $ee[] = process_element($element);
+    array_push($ee, []);
+    $tdki = $element->getElementsByTagName("td");
+    foreach ($tdki as $td) {
+      if($next_avg > 0)
+      {
+        set_inner_html($td, $next_avg);
+        $next_avg = 0;
+      }
+      $avg = process_element($td);
+      if($avg != "")
+      {
+        array_push($ee[count($ee)-1], $avg);
+        $next_avg = $avg->get_my_avg();
+      }
+    }
+    if(count($ee[count($ee)-1]) == 0)
+      continue;
+    $year_avg_td = $element->getElementsByTagName("td")->item(9);
+    $x = $ee[count($ee)-1][0]->get_avg($ee[count($ee)-1][1]);
+    set_inner_html($year_avg_td, $x);
+   
   }
   $html = $doc->saveHTML();
   return [$html, $ee];
@@ -74,7 +116,6 @@ function process_element($element)
   $grades = $element->getElementsByTagName("span");
   $sum = 0;
   $count = 0;
-  $ee = [];
   foreach ($grades as $grade) {
     if($grade->getAttribute("class") != "grade-box") continue;
     if(is_year_grade($grade)) continue;
@@ -89,50 +130,9 @@ function process_element($element)
     }
   }
   if ($count > 0) {
-    $avg = $sum / $count;
-    $avg = round($avg, 2);
-    $avg_elem = $element->getElementsByTagName("td")->item(9);
-    $avg = number_format($avg, 2, ",", "");  
-    set_inner_html($avg_elem,  $avg);
-    $ee[] = $avg;
+    return new Grade($sum / $count, $count);
   }
-  return $ee;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-function process_element_2($element) {
-  $avg = 0;
-  $count = 0;
-  $sum = 0;
-  $children = $element->childNodes;
-
-  foreach ($children as $child) {
-    if ($child->nodeName == "td") {
-      $text = $child->nodeValue;
-      
-      if (is_numeric($text) && $text > 0) {
-        $sum += $text;
-        $count++;
-      }
-    }
-  }
-
-  if ($count > 0) {
-    $avg = $sum / $count;
-    $avg = round($avg, 2);
-    $avg = str_replace(".", ",", $avg);
-  }
+  
 }
 
 ?>
